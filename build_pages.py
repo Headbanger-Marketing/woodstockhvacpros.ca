@@ -270,7 +270,7 @@ def build_home():
   <div class="container">
     <div class="hero__copy reveal">
       <span class="eyebrow on-dark">{CITY}'s Trusted HVAC Experts</span>
-      <h1>Expert Heating &amp; Cooling Repair in <span class="accent">{CITY}, ON</span></h1>
+      <h1>Woodstock Heating & Cooling — Expert Heating &amp; Cooling Repair in <span class="accent">{CITY}, ON</span></h1>
       <p class="hero__sub">At {SITE_NAME}, we treat your home like our own. Serving {CITY}, Ontario and {COUNTY}, we deliver honest, efficient, and dependable HVAC solutions for year-round comfort.</p>
       <div class="hero__cta">
         <a class="btn btn-primary btn-lg" href="#quote">Get a Free Quote</a>
