@@ -165,7 +165,11 @@ p { margin: 0 0 1rem; }
 .topbar__item svg { width: 15px; height: 15px; color: var(--accent); }
 .topbar__right { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; }
 .topbar__right svg { width: 15px; height: 15px; color: var(--accent); }
-@media (max-width: 720px){ .topbar__left .topbar__item--areas { display: none; } }
+@media (max-width: 720px){
+  .topbar__left .topbar__item--areas { display: none; }
+  .topbar .container { justify-content: center; gap: 4px 20px; padding-block: 8px; min-height: 0; }
+  .topbar__left { justify-content: center; }
+}
 
 /* ---------- Header / Nav ---------- */
 .site-header {
@@ -244,8 +248,13 @@ p { margin: 0 0 1rem; }
 
 @media (max-width: 1000px) {
   .nav-toggle { display: flex; }
+  /* Drawer must size to the viewport, not the header. The sticky header has
+     backdrop-filter, which makes it the containing block for position:fixed
+     descendants, so inset/bottom would clip the drawer to the header's height.
+     Pin top/right and use viewport height (dvh) to escape that. */
   .nav {
-    position: fixed; inset: 0 0 0 auto;
+    position: fixed; top: 0; right: 0; bottom: auto; left: auto;
+    height: 100vh; height: 100dvh;
     width: min(380px, 88vw); transform: translateX(100%);
     transition: transform .3s cubic-bezier(.4,0,.2,1);
     background: #fff; flex-direction: column; align-items: stretch;
