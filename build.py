@@ -314,7 +314,7 @@ def plain(s):
     """Decode HTML entities used in display strings before placing inside JSON-LD."""
     return (s or "").replace("&amp;", "&").replace("&nbsp;", " ").replace("&ldquo;", '"').replace("&rdquo;", '"')
 
-# NOTE: aggregateRating intentionally omitted — this is a new business with no
+# NOTE: aggregateRating intentionally omitted, this is a new business with no
 # verified reviews. Adding a fake rating violates Google's review-snippet policy.
 # Add it back only when real, on-page review data exists.
 def schema_localbusiness():
@@ -367,7 +367,7 @@ def crumbs(items):
     return '<nav class="crumbs" aria-label="Breadcrumb">'+"".join(parts)+'</nav>'
 
 def cta_band(title="Ready to Restore Your Home Comfort?",
-             text="Whatever your heating or cooling need, our licensed technicians are ready to help — fast. Get your free, no-obligation quote today."):
+             text="Whatever your heating or cooling need, our licensed technicians are ready to help, fast. Get your free, no-obligation quote today."):
     return f'''<section class="section">
   <div class="container">
     <div class="cta-band reveal">
@@ -391,7 +391,7 @@ def areas_section():
     <div class="section-head reveal">
       <span class="eyebrow">Proudly Local</span>
       <h2>Serving {CITY} &amp; Surrounding Communities</h2>
-      <p>We provide fast, reliable HVAC service throughout {CITY} and {COUNTY}. If you don't see your town listed, give us a call — chances are we cover it.</p>
+      <p>We provide fast, reliable HVAC service throughout {CITY} and {COUNTY}. If you don't see your town listed, give us a call, chances are we cover it.</p>
     </div>
     <ul class="areas reveal">{chips}</ul>
   </div>
@@ -407,4 +407,4 @@ def write_root(filename, content):
     with open(os.path.join(ROOT, filename), "w", encoding="utf-8") as f:
         f.write(content)
 
-print("build.py loaded — run build_pages() (see build_pages.py)")
+print("build.py loaded, run build_pages() (see build_pages.py)")
