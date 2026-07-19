@@ -1,10 +1,10 @@
 :root {
   /* Brand palette */
-  --navy: #1e293b;
-  --navy-light: #334155;
-  --primary: #475569;
-  --accent: #d4a843;
-  --accent2: #b8860b;
+  --navy: #0c3366;
+  --navy-light: #244775;
+  --primary: #32537e;
+  --accent: #d02020;
+  --accent2: #bf1d1d;
   --light-bg: #f8fafc;
   --body: #4a5568;
   --card-bg: #ffffff;
@@ -175,8 +175,8 @@ p { margin: 0 0 1rem; }
 .site-header {
   /* backdrop-filter makes the header a stacking context, so the mobile drawer
      (.nav, a child) can't escape it. The header must therefore outrank
-     .nav-backdrop (z-index 110, a sibling), or the backdrop paints over the
-     open drawer and its links — dimming them and swallowing taps. */
+     .nav-backdrop (z-index 110), or the backdrop paints over the open drawer
+     and its links — dimming them and swallowing taps. */
   position: sticky; top: 0; z-index: 120;
   background: rgba(255,255,255,.94);
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
@@ -256,14 +256,30 @@ p { margin: 0 0 1rem; }
      backdrop-filter, which makes it the containing block for position:fixed
      descendants, so inset/bottom would clip the drawer to the header's height.
      Pin top/right and use viewport height (dvh) to escape that. */
+  /* Drawer must size to the viewport, not the header. The sticky header has
+
+     backdrop-filter, which makes it the containing block for position:fixed
+
+     descendants, so inset/bottom would clip the drawer to the header's height.
+
+     Pin top/right and use viewport height (dvh) to escape that. */
+
   .nav {
+
     position: fixed; top: 0; right: 0; bottom: auto; left: auto;
+
     height: 100vh; height: 100dvh;
+
     width: min(380px, 88vw); transform: translateX(100%);
+
     transition: transform .3s cubic-bezier(.4,0,.2,1);
+
     background: #fff; flex-direction: column; align-items: stretch;
+
     gap: 2px; padding: 24px 18px calc(24px + env(safe-area-inset-bottom));
+
     overflow-y: auto; box-shadow: var(--shadow-lg); z-index: 120;
+
   }
   .nav.open { transform: translateX(0); }
   .nav__link {
@@ -894,3 +910,12 @@ img.responsive { width: 100%; height: auto; }
   .site-header { position: static; }
   body { padding-bottom: 0; }
 }
+
+/* remediation: recovered-photo classes */
+.media-photo{width:100%;height:auto;display:block;border-radius:18px;object-fit:cover;box-shadow:0 22px 48px -26px rgba(0,0,0,.5)}
+.svc-photo{width:100%;height:auto;display:block;border-radius:16px;margin:0 0 22px;object-fit:cover;max-height:420px}
+.badge-img{height:72px;width:auto;display:block}
+/* remediation: real logo sizing */
+.brand__logo{height:52px;width:auto;display:block}
+.footer-brand .brand__logo{height:62px}
+@media(max-width:600px){.brand__logo{height:42px}}
