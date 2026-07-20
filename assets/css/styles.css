@@ -1,26 +1,26 @@
 :root {
   /* Brand palette */
-  --navy: #0c3366;
-  --navy-light: #244775;
-  --primary: #32537e;
-  --accent: #d02020;
-  --accent2: #bf1d1d;
-  --light-bg: #f8fafc;
-  --body: #4a5568;
-  --card-bg: #ffffff;
-  --warm-gradient: rgba(212,168,67,0.12);
+  --navy: #0f2544;
+  --navy-light: #1c3f66;
+  --primary: #2563eb;
+  --accent: #0369a1;
+  --accent2: #075985;
+  --light-bg: #eaf3fb;
+  --body: #3c4a5c;
+  --card-bg: #f3f8fc;
+  --warm-gradient: rgba(37,99,235,0.10);
 
   /* System tokens */
-  --ink: #090c11;
-  --muted: #252a34;
+  --ink: #0d0909;
+  --muted: #47566a;
   --muted-light: #8b9aad;
   --line: #e4eaf0;
   --line-2: #d2dbe5;
   --surface: #ffffff;
-  --bg: #fcfdfe;
-  --bg-alt: #fbfcfd;
-  --success: #1f9d62;
-  --star: #f5a623;
+  --bg: #f7fafd;
+  --bg-alt: #f1f6fb;
+  --success: #15803d;
+  --star: #b45309;
   --error: #c0392b;
 
   /* Type */
@@ -88,7 +88,7 @@ p { margin: 0 0 1rem; }
   margin-bottom: 14px;
 }
 .eyebrow::before { content:""; width: 28px; height: 2.5px; background: var(--accent); border-radius: 2px; }
-.eyebrow.on-dark { color: var(--accent); opacity: .9; }
+.eyebrow.on-dark { color: #7dd3fc; opacity: 1; }
 
 /* ---------- Layout helpers ---------- */
 .container { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
@@ -173,11 +173,7 @@ p { margin: 0 0 1rem; }
 
 /* ---------- Header / Nav ---------- */
 .site-header {
-  /* backdrop-filter makes the header a stacking context, so the mobile drawer
-     (.nav, a child) can't escape it. The header must therefore outrank
-     .nav-backdrop (z-index 110), or the backdrop paints over the open drawer
-     and its links — dimming them and swallowing taps. */
-  position: sticky; top: 0; z-index: 120;
+  position: sticky; top: 0; z-index: 100;
   background: rgba(255,255,255,.94);
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
@@ -256,30 +252,14 @@ p { margin: 0 0 1rem; }
      backdrop-filter, which makes it the containing block for position:fixed
      descendants, so inset/bottom would clip the drawer to the header's height.
      Pin top/right and use viewport height (dvh) to escape that. */
-  /* Drawer must size to the viewport, not the header. The sticky header has
-
-     backdrop-filter, which makes it the containing block for position:fixed
-
-     descendants, so inset/bottom would clip the drawer to the header's height.
-
-     Pin top/right and use viewport height (dvh) to escape that. */
-
   .nav {
-
     position: fixed; top: 0; right: 0; bottom: auto; left: auto;
-
     height: 100vh; height: 100dvh;
-
     width: min(380px, 88vw); transform: translateX(100%);
-
     transition: transform .3s cubic-bezier(.4,0,.2,1);
-
     background: #fff; flex-direction: column; align-items: stretch;
-
     gap: 2px; padding: 24px 18px calc(24px + env(safe-area-inset-bottom));
-
     overflow-y: auto; box-shadow: var(--shadow-lg); z-index: 120;
-
   }
   .nav.open { transform: translateX(0); }
   .nav__link {
@@ -360,9 +340,21 @@ p { margin: 0 0 1rem; }
 }
 .hero h1 { color: #fff; }
 .hero h1 .accent {
-  background: linear-gradient(120deg, var(--accent), var(--accent2));
+  /* Gradient between two lightened variants of --accent so both endpoints
+     pass WCAG AA-large (>=3.0) against var(--navy) on every site. The old
+     rule (accent -> accent2) was invisible on most sites because accent2
+     was nearly identical to navy. */
+  background: linear-gradient(120deg, color-mix(in srgb, var(--accent), white 55%), color-mix(in srgb, var(--accent), white 30%));
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
+}
+/* Browsers without color-mix support (older Safari): fall back to solid accent. */
+@supports not (background: color-mix(in srgb, red, white)) {
+  .hero h1 .accent {
+    background: none;
+    -webkit-text-fill-color: var(--accent);
+    color: var(--accent);
+  }
 }
 .hero__sub {
   font-size: 1.2rem; color: #b9cee2;
@@ -704,12 +696,32 @@ textarea { resize: vertical; min-height: 100px; }
   background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
   background-size: 22px 22px; opacity: .4;
 }
+/* Variant: hero with a background image (service pages). Image is darkened
+   heavily so white text stays readable. */
+.page-hero--with-bg {
+  background: var(--navy);
+}
+.page-hero--with-bg::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: var(--hero-bg-url);
+  background-size: cover;
+  background-position: center;
+  opacity: .35;
+}
+.page-hero--with-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(8,30,55,.55) 0%, rgba(8,30,55,.85) 100%);
+  background-image: none;
+  opacity: 1;
+}
 .page-hero .container {
   position: relative; z-index: 2;
   padding-block: clamp(46px, 5vw, 72px);
 }
 .page-hero h1 { color: #fff; max-width: 760px; }
 .page-hero p { color: #b9cee2; max-width: 680px; font-size: 1.14rem; margin-top: 16px; }
+.page-hero p a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+.page-hero p a:hover { opacity: .85; }
 .crumbs {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
   font-size: .88rem; margin-bottom: 20px; color: #8fb0cf;
@@ -770,6 +782,7 @@ textarea { resize: vertical; min-height: 100px; }
 .post-card__img.warm { background: linear-gradient(150deg, var(--accent), var(--accent2)); color: #fff; }
 .post-card__img.cool { background: linear-gradient(150deg, var(--primary), var(--navy)); color: var(--accent); }
 .post-card__img svg { width: 56px; height: 56px; opacity: .85; }
+img.post-card__img { width: 100%; object-fit: cover; display: block; }
 .post-card__body { padding: 26px; display: flex; flex-direction: column; flex: 1; }
 .post-card__body .tag {
   font-size: .78rem; color: var(--accent2); font-weight: 700;
@@ -808,16 +821,16 @@ textarea { resize: vertical; min-height: 100px; }
 .info-card a:hover { color: var(--accent); }
 
 /* ---------- Footer ---------- */
-.site-footer { background: var(--navy); color: #9fb4ca; padding-top: clamp(52px, 6vw, 72px); }
+.site-footer { background: var(--navy); color: #9fb4ca; padding-top: clamp(40px, 5vw, 58px); }
 .footer-grid {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1.2fr 1.2fr;
-  gap: 38px; padding-bottom: 48px;
+  gap: 30px; padding-bottom: 34px;
 }
-@media (max-width: 900px){ .footer-grid { grid-template-columns: 1fr 1fr; gap: 34px; } }
+@media (max-width: 900px){ .footer-grid { grid-template-columns: 1fr 1fr; gap: 26px; } }
 @media (max-width: 520px){ .footer-grid { grid-template-columns: 1fr; } }
 .footer-brand .brand__name { color: #fff; }
-.footer-about { margin: 18px 0; font-size: .96rem; max-width: 340px; line-height: 1.6; }
+.footer-about { margin: 14px 0; font-size: .96rem; max-width: 340px; line-height: 1.6; }
 .footer-social { display: flex; gap: 10px; }
 .footer-social a {
   width: 42px; height: 42px; border-radius: var(--r-sm);
@@ -828,13 +841,13 @@ textarea { resize: vertical; min-height: 100px; }
 .footer-social svg { width: 19px; height: 19px; }
 .site-footer h4 {
   color: #fff; font-size: .84rem; letter-spacing: .1em;
-  text-transform: uppercase; margin-bottom: 20px;
+  text-transform: uppercase; margin-bottom: 14px;
 }
-.footer-links { display: grid; gap: 12px; }
+.footer-links { display: grid; gap: 7px; }
 .footer-links a { color: #9fb4ca; font-size: .96rem; transition: color .15s ease; }
-.footer-links a:hover { color: var(--accent); }
+.footer-links a:hover { color: #7dd3fc; }
 .footer-contact li {
-  display: flex; gap: 12px; margin-bottom: 16px;
+  display: flex; gap: 12px; margin-bottom: 9px;
   font-size: .96rem; align-items: flex-start;
 }
 .footer-contact svg {
@@ -844,7 +857,7 @@ textarea { resize: vertical; min-height: 100px; }
 .footer-contact a { color: #cfe0f0; font-weight: 600; }
 .footer-bottom {
   border-top: 1px solid rgba(255,255,255,.08);
-  padding: 24px 0; display: flex; align-items: center;
+  padding: 16px 0; display: flex; align-items: center;
   justify-content: space-between; gap: 14px; flex-wrap: wrap;
   font-size: .9rem;
 }
@@ -867,6 +880,10 @@ textarea { resize: vertical; min-height: 100px; }
   .mobile-bar { display: grid; }
   body { padding-bottom: 72px; }
 }
+
+/* Hide the sticky call bar while a quote form is on screen (the form is right there) */
+.mobile-bar { transition: transform .28s ease, opacity .28s ease; }
+.mobile-bar.is-hidden { transform: translateY(130%); opacity: 0; pointer-events: none; }
 
 /* ---------- Reveal animation ---------- */
 .js .reveal {
@@ -911,11 +928,11 @@ img.responsive { width: 100%; height: auto; }
   body { padding-bottom: 0; }
 }
 
-/* remediation: recovered-photo classes */
+/* real WP logo */
+.brand__logo{height:48px;width:auto;display:block}
+.footer-brand .brand__logo{height:64px}
+@media(max-width:600px){.brand__logo{height:40px}}
+/* recovered WP photos */
 .media-photo{width:100%;height:auto;display:block;border-radius:18px;object-fit:cover;box-shadow:0 22px 48px -26px rgba(0,0,0,.5)}
 .svc-photo{width:100%;height:auto;display:block;border-radius:16px;margin:0 0 22px;object-fit:cover;max-height:420px}
-.badge-img{height:72px;width:auto;display:block}
-/* remediation: real logo sizing */
-.brand__logo{height:52px;width:auto;display:block}
-.footer-brand .brand__logo{height:62px}
-@media(max-width:600px){.brand__logo{height:42px}}
+.badge-img{height:88px;width:auto;display:block}
