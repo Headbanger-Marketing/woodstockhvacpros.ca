@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# ============================================================ DEPRECATED
+# Anchor: HVAC_LEGACY_BUILDER_DISABLED_ASTRO_IS_SOT
+# This Python SSG is SUPERSEDED by the shared-source Astro project at
+# ~/Projects/hvac/hvac-astro/ (Astro 7.1.1, migrated 2026-07-20). Running it
+# regenerates OLD pre-Astro HTML and silently reverts the hero-contrast fix,
+# WCAG fixes, /services/ removal, and address corrections.
+# Source of truth = hvac-astro/. To change this site:
+#   edit hvac-astro/src/sites/<domain>.ts -> npm run build -> sync-deploy-repo.sh
+import sys as _sys
+_sys.exit("REFUSING to run deprecated build.py -- see hvac-astro/ (Astro is now the SoT)")
+# ============================================================ DEPRECATED
 """
 Static-site generator for woodstockhvacpros.ca
 Outputs pure static HTML (no runtime dependency) into the repo root.
