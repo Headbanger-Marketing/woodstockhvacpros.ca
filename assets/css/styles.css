@@ -667,7 +667,7 @@ textarea { resize: vertical; min-height: 100px; }
 .faq__a p { margin: 0; }
 
 /* ---------- Areas ---------- */
-.areas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.areas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: left; list-style: none; padding: 0; margin: 0; }
 .areas li a, .area-pill {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 20px; background: var(--card-bg);
@@ -681,7 +681,7 @@ textarea { resize: vertical; min-height: 100px; }
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }
-.areas svg { width: 15px; height: 15px; color: var(--accent); }
+.areas svg { width: 15px; height: 15px; color: var(--accent); flex-shrink: 0; }
 
 /* ---------- Page hero (inner) ---------- */
 .page-hero {
@@ -696,6 +696,23 @@ textarea { resize: vertical; min-height: 100px; }
   background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
   background-size: 22px 22px; opacity: .4;
 }
+/* Variant: shared home-comfort background image (location pages), darkened
+   like the homepage .hero.has-bg so white text stays readable. */
+.page-hero.has-bg {
+  background-image: url('/assets/img/hero.webp');
+  background-size: cover;
+  background-position: center;
+}
+.page-hero.has-bg::before {
+  content: ""; position: absolute; inset: 0; z-index: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(10, 22, 40, 0.92) 0%,
+    rgba(15, 30, 55, 0.82) 45%,
+    rgba(10, 22, 40, 0.74) 100%
+  );
+}
+.page-hero.has-bg::after { opacity: .3; }
 /* Variant: hero with a background image (service pages). Image is darkened
    heavily so white text stays readable. */
 .page-hero--with-bg {
