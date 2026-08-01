@@ -132,11 +132,16 @@
       payload.append("date_created", stamp);
 
       var done = function (ok) {
+        /* If the form opted into a thank-you redirect, navigate on success.
+           no-cors makes the response opaque, so a resolved promise (ok=true)
+           is the same "network reached n8n" bar the inline success message
+           uses. Network failures (ok=false) keep the inline error + no redirect. */
+        if (ok && form.dataset.redirectOnSuccess) { window.location.href = form.dataset.redirectOnSuccess; return; }
         if (status) {
           status.className = "form-status " + (ok ? "ok" : "err");
           status.textContent = ok
             ? "✓ Thank you! Your request has been received. A local technician will get back to you shortly."
-            : "We couldn't submit your request. Please email contact@londonheatingcooling.ca and we'll respond right away.";
+            : "We couldn't submit your request. Please email contact@" + window.location.hostname + " and we'll respond right away.";
         }
         if (ok) form.reset();
         if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || "Submit"; }
