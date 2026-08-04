@@ -296,8 +296,13 @@ p { margin: 0 0 1rem; }
   .nav__cta .btn { width: 100%; }
 }
 .nav-backdrop {
+  /* z 99, NOT 110: the sticky header (z 100 + backdrop-filter) is a stacking
+     context, so the drawer's z 120 only ranks inside it. A backdrop above 100
+     covers the open drawer and eats every tap (its click handler just closes
+     the menu). 99 keeps the scrim under the header/drawer but above the page
+     and the mobile bar (z 90), so dim-area taps still close. */
   position: fixed; inset: 0; background: rgba(0,0,0,.4);
-  opacity: 0; visibility: hidden; transition: opacity .3s; z-index: 110;
+  opacity: 0; visibility: hidden; transition: opacity .3s; z-index: 99;
 }
 .nav-backdrop.show { opacity: 1; visibility: visible; }
 
