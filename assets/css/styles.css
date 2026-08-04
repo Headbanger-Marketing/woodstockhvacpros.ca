@@ -178,9 +178,12 @@ p { margin: 0 0 1rem; }
 
 /* ---------- Header / Nav ---------- */
 .site-header {
+  /* No backdrop-filter here: it makes the header the containing block for
+     position:fixed descendants, which trapped the mobile drawer in the
+     header's box (offset top, offscreen jumps on scroll, stacking traps).
+     Solid bg reads the same as the old frosted rgba(.94) without the trap. */
   position: sticky; top: 0; z-index: 100;
-  background: rgba(255,255,255,.94);
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  background: #fff;
   border-bottom: 1px solid var(--line);
   transition: box-shadow .2s ease;
 }
@@ -258,6 +261,8 @@ p { margin: 0 0 1rem; }
      descendants, so inset/bottom would clip the drawer to the header's height.
      Pin top/right and use viewport height (dvh) to escape that. */
   .nav {
+    /* Standard off-canvas drawer: true viewport-fixed full-height panel
+       (the header no longer creates a containing block for it). */
     position: fixed; top: 0; right: 0; bottom: auto; left: auto;
     height: 100vh; height: 100dvh;
     width: min(380px, 88vw); transform: translateX(100%);
@@ -296,13 +301,12 @@ p { margin: 0 0 1rem; }
   .nav__cta .btn { width: 100%; }
 }
 .nav-backdrop {
-  /* z 99, NOT 110: the sticky header (z 100 + backdrop-filter) is a stacking
-     context, so the drawer's z 120 only ranks inside it. A backdrop above 100
-     covers the open drawer and eats every tap (its click handler just closes
-     the menu). 99 keeps the scrim under the header/drawer but above the page
-     and the mobile bar (z 90), so dim-area taps still close. */
+  /* Scrim is rendered INSIDE the header's stacking context (see Header.astro):
+     105 ranks above the header chrome but below the drawer (120), and the
+     whole header context (100) sits above page + mobile bar, so everything
+     but the drawer dims. Taps on the dim still hit the scrim -> close. */
   position: fixed; inset: 0; background: rgba(0,0,0,.4);
-  opacity: 0; visibility: hidden; transition: opacity .3s; z-index: 99;
+  opacity: 0; visibility: hidden; transition: opacity .3s; z-index: 105;
 }
 .nav-backdrop.show { opacity: 1; visibility: visible; }
 
