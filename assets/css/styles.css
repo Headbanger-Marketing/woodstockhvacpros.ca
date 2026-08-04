@@ -52,6 +52,10 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   scroll-padding-top: var(--header-h);
+  /* clip (not hidden): forbids scrolling without creating a scroll container,
+     so the offscreen mobile drawer can no longer inflate the mobile layout
+     viewport (which made phones render the whole site zoomed out). */
+  overflow-x: clip;
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -65,7 +69,7 @@ body {
   font-size: 17px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 img,svg,video { max-width: 100%; display: block; height: auto; }
 a { color: var(--primary); text-decoration: none; transition: color .18s ease; }
@@ -257,12 +261,19 @@ p { margin: 0 0 1rem; }
     position: fixed; top: 0; right: 0; bottom: auto; left: auto;
     height: 100vh; height: 100dvh;
     width: min(380px, 88vw); transform: translateX(100%);
-    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    /* Closed drawer is out of the a11y tree + tab order; visibility flips
+       only after the slide-out finishes so the close animation still shows. */
+    visibility: hidden;
+    transition: transform .3s cubic-bezier(.4,0,.2,1), visibility 0s linear .3s;
     background: #fff; flex-direction: column; align-items: stretch;
     gap: 2px; padding: 24px 18px calc(24px + env(safe-area-inset-bottom));
     overflow-y: auto; box-shadow: var(--shadow-lg); z-index: 120;
   }
-  .nav.open { transform: translateX(0); }
+  .nav.open {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform .3s cubic-bezier(.4,0,.2,1), visibility 0s linear 0s;
+  }
   .nav__link {
     padding: 14px 16px; font-size: 1.05rem; border-radius: var(--r-sm);
     justify-content: space-between;
@@ -275,6 +286,10 @@ p { margin: 0 0 1rem; }
     min-width: 0; max-height: 0; overflow: hidden;
     transition: max-height .3s ease;
   }
+  /* Collapsed dropdown: zero padding/margin so max-height:0 truly renders 0px
+     (border-box clamps to padding, which left an 8px sliver whose accent
+     border-left showed as a stray tick between Services and Contact). */
+  .has-dropdown:not(.open) .dropdown { padding: 0; margin: 0 0 0 14px; }
   .has-dropdown.open .dropdown { max-height: 520px; }
   .has-dropdown.open .nav__link svg { transform: rotate(180deg); }
   .nav__cta { flex-direction: column; align-items: stretch; margin: 12px 0 0; gap: 10px; }
@@ -456,8 +471,16 @@ textarea { resize: vertical; min-height: 100px; }
   font-variant-numeric: tabular-nums;
 }
 .trust-strip__item span { font-size: .92rem; }
-@media (max-width: 860px){ .trust-strip .container { grid-template-columns: repeat(2,1fr); gap: 24px; } }
-@media (max-width: 420px){ .trust-strip .container { grid-template-columns: 1fr; } }
+/* 4-col wraps awkwardly below ~1000px ("No-obligation quotes" etc.), 2-col
+   below ~560px forces one-word-per-line on phones — measured breakpoints. */
+@media (max-width: 1000px){ .trust-strip .container { grid-template-columns: repeat(2,1fr); gap: 24px; } }
+@media (max-width: 560px){ .trust-strip .container { grid-template-columns: 1fr; } }
+/* Odd 5th item (Lennox Premier Dealer badge) would orphan in 4/2-col grids;
+   give it a centered full-width row instead. No-op on 4-item verticals and
+   on the 1-col phone layout (items stay left-aligned there). */
+@media (min-width: 561px){
+  .trust-strip__item:last-child:nth-child(odd) { grid-column: 1 / -1; justify-content: center; }
+}
 
 /* ---------- Service grid ---------- */
 .svc-grid {
