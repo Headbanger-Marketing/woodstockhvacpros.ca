@@ -889,7 +889,7 @@ img.post-card__img { width: 100%; object-fit: cover; display: block; }
 }
 .footer-social a:hover { background: var(--accent); color: #fff; }
 .footer-social svg { width: 19px; height: 19px; }
-.site-footer h4 {
+.site-footer h2 {
   color: #fff; font-size: .84rem; letter-spacing: .1em;
   text-transform: uppercase; margin-bottom: 14px;
 }
