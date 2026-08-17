@@ -451,6 +451,8 @@ textarea { resize: vertical; min-height: 100px; }
 .error-text { color: var(--error); font-size: .84rem; font-weight: 600; display: none; }
 .field.invalid .input, .field.invalid textarea { border-color: #e06c5a; }
 .field.invalid .error-text { display: block; }
+.field > div.invalid .input, .field > div.invalid textarea { border-color: #e06c5a; }
+.field > div.invalid .error-text { display: block; }
 
 /* ---------- Trust strip ---------- */
 .trust-strip { background: var(--navy); }
