@@ -27,10 +27,7 @@
     nav.classList.toggle("open", open);
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
     if (backdrop) backdrop.classList.toggle("show", open);
-    /* Lock scroll on <html>, not <body>: locking body turns it into a nested
-       scroll container and the viewport jump-clamps the scroll position when
-       the menu opens (header + drawer flew offscreen on scrolled pages). */
-    d.documentElement.style.overflow = open && window.innerWidth <= 1000 ? "hidden" : "";
+    d.body.style.overflow = open && window.innerWidth <= 1000 ? "hidden" : "";
   }
   if (toggle) toggle.addEventListener("click", function () {
     setNav(!nav.classList.contains("open"));
