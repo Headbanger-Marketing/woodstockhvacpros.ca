@@ -477,12 +477,6 @@ textarea { resize: vertical; min-height: 100px; }
    below ~560px forces one-word-per-line on phones — measured breakpoints. */
 @media (max-width: 1000px){ .trust-strip .container { grid-template-columns: repeat(2,1fr); gap: 24px; } }
 @media (max-width: 560px){ .trust-strip .container { grid-template-columns: 1fr; } }
-/* Odd 5th item (Lennox Premier Dealer badge) would orphan in 4/2-col grids;
-   give it a centered full-width row instead. No-op on 4-item verticals and
-   on the 1-col phone layout (items stay left-aligned there). */
-@media (min-width: 561px){
-  .trust-strip__item:last-child:nth-child(odd) { grid-column: 1 / -1; justify-content: center; }
-}
 
 /* ---------- Service grid ---------- */
 .svc-grid {
