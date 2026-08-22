@@ -178,9 +178,12 @@ p { margin: 0 0 1rem; }
 
 /* ---------- Header / Nav ---------- */
 .site-header {
+  /* No backdrop-filter here: it makes the header the containing block for
+     position:fixed descendants, which trapped the mobile drawer in the
+     header's box (offset top, offscreen jumps on scroll, stacking traps).
+     Solid bg reads the same as the old frosted rgba(.94) without the trap. */
   position: sticky; top: 0; z-index: 100;
-  background: rgba(255,255,255,.94);
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  background: #fff;
   border-bottom: 1px solid var(--line);
   transition: box-shadow .2s ease;
 }
@@ -258,6 +261,8 @@ p { margin: 0 0 1rem; }
      descendants, so inset/bottom would clip the drawer to the header's height.
      Pin top/right and use viewport height (dvh) to escape that. */
   .nav {
+    /* Standard off-canvas drawer: true viewport-fixed full-height panel
+       (the header no longer creates a containing block for it). */
     position: fixed; top: 0; right: 0; bottom: auto; left: auto;
     height: 100vh; height: 100dvh;
     width: min(380px, 88vw); transform: translateX(100%);
@@ -296,8 +301,12 @@ p { margin: 0 0 1rem; }
   .nav__cta .btn { width: 100%; }
 }
 .nav-backdrop {
+  /* Scrim is rendered INSIDE the header's stacking context (see Header.astro):
+     105 ranks above the header chrome but below the drawer (120), and the
+     whole header context (100) sits above page + mobile bar, so everything
+     but the drawer dims. Taps on the dim still hit the scrim -> close. */
   position: fixed; inset: 0; background: rgba(0,0,0,.4);
-  opacity: 0; visibility: hidden; transition: opacity .3s; z-index: 110;
+  opacity: 0; visibility: hidden; transition: opacity .3s; z-index: 105;
 }
 .nav-backdrop.show { opacity: 1; visibility: visible; }
 
@@ -451,8 +460,6 @@ textarea { resize: vertical; min-height: 100px; }
 .error-text { color: var(--error); font-size: .84rem; font-weight: 600; display: none; }
 .field.invalid .input, .field.invalid textarea { border-color: #e06c5a; }
 .field.invalid .error-text { display: block; }
-.field > div.invalid .input, .field > div.invalid textarea { border-color: #e06c5a; }
-.field > div.invalid .error-text { display: block; }
 
 /* ---------- Trust strip ---------- */
 .trust-strip { background: var(--navy); }
@@ -477,6 +484,12 @@ textarea { resize: vertical; min-height: 100px; }
    below ~560px forces one-word-per-line on phones — measured breakpoints. */
 @media (max-width: 1000px){ .trust-strip .container { grid-template-columns: repeat(2,1fr); gap: 24px; } }
 @media (max-width: 560px){ .trust-strip .container { grid-template-columns: 1fr; } }
+/* Odd 5th item (Lennox Premier Dealer badge) would orphan in 4/2-col grids;
+   give it a centered full-width row instead. No-op on 4-item verticals and
+   on the 1-col phone layout (items stay left-aligned there). */
+@media (min-width: 561px){
+  .trust-strip__item:last-child:nth-child(odd) { grid-column: 1 / -1; justify-content: center; }
+}
 
 /* ---------- Service grid ---------- */
 .svc-grid {
@@ -569,7 +582,7 @@ textarea { resize: vertical; min-height: 100px; }
   display: grid; place-items: center;
 }
 .feature-list .fi svg { width: 22px; height: 22px; }
-.feature-list h3 { margin-bottom: 4px; font-family: var(--font-head); font-size: 1.1rem; }
+.feature-list h4 { margin-bottom: 4px; font-family: var(--font-head); }
 .feature-list p { margin: 0; color: var(--muted); font-size: .96rem; }
 
 /* Decorative media panel (no images needed) */
@@ -776,7 +789,6 @@ textarea { resize: vertical; min-height: 100px; }
   box-shadow: var(--shadow-sm);
 }
 .callout h3 { margin-bottom: 8px; }
-.callout h2 { margin-bottom: 8px; font-size: clamp(1.2rem, 1.05rem + .7vw, 1.5rem); }
 .callout p { margin: 0; color: var(--body); }
 
 /* ---------- Article ---------- */
@@ -854,7 +866,6 @@ img.post-card__img { width: 100%; object-fit: cover; display: block; }
 }
 .info-card .ic svg { width: 26px; height: 26px; }
 .info-card h3 { font-size: 1.18rem; margin-bottom: 8px; }
-.info-card h2 { font-size: 1.18rem; margin-bottom: 8px; }
 .info-card p, .info-card a { color: var(--body); font-size: 1rem; margin: 0; }
 .info-card a { font-weight: 700; color: var(--navy); }
 .info-card a:hover { color: var(--accent); }
@@ -878,7 +889,7 @@ img.post-card__img { width: 100%; object-fit: cover; display: block; }
 }
 .footer-social a:hover { background: var(--accent); color: #fff; }
 .footer-social svg { width: 19px; height: 19px; }
-.site-footer h2 {
+.site-footer h4 {
   color: #fff; font-size: .84rem; letter-spacing: .1em;
   text-transform: uppercase; margin-bottom: 14px;
 }
