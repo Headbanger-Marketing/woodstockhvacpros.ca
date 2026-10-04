@@ -96,6 +96,8 @@
 
   /* ---- Quote / contact forms (front-end demo handler) ---- */
   d.querySelectorAll("form[data-quote-form]").forEach(function (form) {
+    if (form.dataset.leadSubmitBound === "true") return;
+    form.dataset.leadSubmitBound = "true";
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var valid = true;
@@ -111,7 +113,8 @@
 
       var btn = form.querySelector('button[type="submit"]');
       var status = form.querySelector(".form-status");
-      if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = "Sending…"; }
+      if (btn && btn.disabled) return;
+      if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = "Sending..."; }
 
       var val = function (n) { var el = form.querySelector('[name="' + n + '"]'); return el ? el.value.trim() : ""; };
       var p2 = function (x) { return String(x).padStart(2, "0"); };
@@ -132,29 +135,25 @@
       payload.append("date_created", stamp);
 
       var done = function (ok) {
-        /* If the form opted into a thank-you redirect, navigate on success.
-           no-cors makes the response opaque, so a resolved promise (ok=true)
-           is the same "network reached n8n" bar the inline success message
-           uses. Network failures (ok=false) keep the inline error + no redirect. */
+        /* Redirect only after the intake endpoint accepts the request. */
         if (ok && form.dataset.redirectOnSuccess) { window.location.href = form.dataset.redirectOnSuccess; return; }
         if (status) {
           status.className = "form-status " + (ok ? "ok" : "err");
           status.textContent = ok
-            ? "✓ Thank you! Your request has been received. A local technician will get back to you shortly."
-            : "We couldn't submit your request. Please email contact@" + window.location.hostname + " and we'll respond right away.";
+            ? "Thank you. Your request has been received for review. The responding provider will confirm availability and next steps."
+            : "We could not submit your request. Your details are still here. Please try again, or email contact@" + window.location.hostname + ".";
         }
         if (ok) form.reset();
         if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || "Submit"; }
       };
 
-      /* no-cors form-urlencoded POST — a "simple" request that reaches n8n without a
-         CORS preflight. The response is opaque, so a resolved promise = delivered. */
+      /* Read the intake acknowledgement before confirming receipt. */
       fetch(LEAD_WEBHOOK, {
         method: "POST",
-        mode: "no-cors",
+        mode: "cors",
         headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
         body: payload.toString()
-      }).then(function () { done(true); }).catch(function () { done(false); });
+      }).then(function (response) { done(response.ok); }).catch(function () { done(false); });
     });
 
     /* clear invalid state on input */
