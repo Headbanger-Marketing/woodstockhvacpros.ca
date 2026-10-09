@@ -100,10 +100,11 @@
     form.dataset.leadSubmitBound = "true";
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      var isEnquiry = form.dataset.enquirySite === "true";
       var valid = true;
       form.querySelectorAll("[required]").forEach(function (input) {
         var field = input.closest(".field, .field > div, .field-wrap") || input.parentElement;
-        var ok = input.value.trim() !== "";
+        var ok = input.type === "checkbox" || input.type === "radio" ? input.checked : input.value.trim() !== "";
         if (input.type === "email") ok = ok && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(input.value);
         if (field) field.classList.toggle("invalid", !ok);
         if (!ok && valid) { input.focus(); }
@@ -115,6 +116,7 @@
       var status = form.querySelector(".form-status");
       if (btn && btn.disabled) return;
       if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = "Sending..."; }
+      if (isEnquiry && status) { status.className = "form-status"; status.textContent = ""; }
 
       var val = function (n) { var el = form.querySelector('[name="' + n + '"]'); return el ? el.value.trim() : ""; };
       var p2 = function (x) { return String(x).padStart(2, "0"); };
@@ -133,27 +135,55 @@
       payload.append("5.5", val("postal"));
       payload.append("source_url", window.location.href);
       payload.append("date_created", stamp);
+      if (isEnquiry) payload.append("consent", "contact_and_provider_assessment_agreed");
 
-      var done = function (ok) {
+      var requestController = isEnquiry && typeof AbortController !== "undefined" ? new AbortController() : null;
+      var receiptTimer = null;
+      var settled = false;
+      var done = function (ok, timedOut) {
+        if (settled) return;
+        settled = true;
+        if (receiptTimer) clearTimeout(receiptTimer);
         /* Redirect only after the intake endpoint accepts the request. */
         if (ok && form.dataset.redirectOnSuccess) { window.location.href = form.dataset.redirectOnSuccess; return; }
         if (status) {
           status.className = "form-status " + (ok ? "ok" : "err");
           status.textContent = ok
-            ? "Thank you. Your request has been received for review. The responding provider will confirm availability and next steps."
-            : "We could not submit your request. Your details are still here. Please try again, or email contact@" + window.location.hostname + ".";
+            ? (form.getAttribute("data-enquiry-site") === "true"
+              ? "Thank you. Headbanger Marketing has received your enquiry for review. A contractor and appointment require separate confirmation."
+              : "Thank you. Your request has been received for review. The responding provider will confirm availability and next steps.")
+            : (isEnquiry
+              ? "Receipt could not be confirmed. Your details are still here. " + (timedOut ? "The request timed out and may already have reached intake. " : "") + "Please retry, or email contact@" + window.location.hostname + "."
+              : "We could not submit your request. Your details are still here. Please try again, or email contact@" + window.location.hostname + ".");
         }
-        if (ok) form.reset();
+        if (ok && !isEnquiry) form.reset();
         if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || "Submit"; }
       };
 
+      /* New enquiries recover on an uncertain receipt without losing entries. */
+      if (isEnquiry) receiptTimer = setTimeout(function () {
+        done(false, true);
+        if (requestController) requestController.abort();
+      }, 15000);
       /* Read the intake acknowledgement before confirming receipt. */
       fetch(LEAD_WEBHOOK, {
         method: "POST",
         mode: "cors",
         headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-        body: payload.toString()
-      }).then(function (response) { done(response.ok); }).catch(function () { done(false); });
+        body: payload.toString(),
+        ...(requestController ? { signal: requestController.signal } : {})
+      }).then(function (response) {
+        if (!response.ok) { done(false); return; }
+        if (!isEnquiry) { done(true); return; }
+        var contentType = response.headers.get("content-type") || "";
+        if (contentType.toLowerCase().indexOf("json") === -1) { done(true); return; }
+        return response.json().then(function (acknowledgement) {
+          var accepted = acknowledgement && typeof acknowledgement === "object" && !Array.isArray(acknowledgement)
+            && acknowledgement.accepted !== false && acknowledgement.success !== false && acknowledgement.ok !== false
+            && !acknowledgement.error;
+          done(!!accepted);
+        });
+      }).catch(function () { done(false); });
     });
 
     /* clear invalid state on input */
