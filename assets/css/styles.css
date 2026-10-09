@@ -1024,3 +1024,8 @@ img.responsive { width: 100%; height: auto; }
 .media-photo{width:100%;height:auto;display:block;border-radius:18px;object-fit:cover;box-shadow:0 22px 48px -26px rgba(0,0,0,.5)}
 .svc-photo{width:100%;height:auto;display:block;border-radius:16px;margin:0 0 22px;object-fit:cover;max-height:420px}
 .badge-img{height:88px;width:auto;display:block}
+
+/* Text-only per-domain wordmarks for the new enquiry sites. */
+.site-header .site-wordmark { display:block; width:auto; height:48px; max-width:min(260px,65vw); object-fit:contain; object-position:left center; }
+.site-footer .site-wordmark { display:block; width:auto; height:54px; max-width:100%; object-fit:contain; object-position:left center; }
+@media(max-width:600px){ .site-header .site-wordmark { height:42px; max-width:65vw; } }
