@@ -1,99 +1,63 @@
-/* Ajax Heating & Cooling — site interactions */
+/* Navigation and progressive enhancement for service-request pages. */
 (function () {
   "use strict";
-  var d = document;
-
-  /* Lead webhook — Headbanger n8n "HVAC Form Lead Tracking" (auto.sdagents.ai).
-     Field IDs match the workflow's Google Sheet / email / Telegram mappings. */
-  var LEAD_WEBHOOK = "https://auto.sdagents.ai/webhook/hvac-sites";
-
-  /* ---- Sticky header shadow ---- */
-  var header = d.querySelector(".site-header");
+  var d = document, header = d.querySelector(".site-header");
   if (header) {
-    var onScroll = function () {
-      header.classList.toggle("scrolled", window.scrollY > 8);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    var onScroll = function () { header.classList.toggle("scrolled", window.scrollY > 8); };
+    onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
   }
-
-  /* ---- Mobile nav ---- */
-  var toggle = d.querySelector(".nav-toggle");
-  var nav = d.querySelector(".nav");
-  var backdrop = d.querySelector(".nav-backdrop");
-
-  function setNav(open) {
+  var toggle = d.querySelector(".nav-toggle"), nav = d.querySelector(".nav"), backdrop = d.querySelector(".nav-backdrop");
+  function setDropdown(group, open) {
+    var button = group.querySelector("[data-services-toggle]"), menu = group.querySelector(".dropdown");
+    group.classList.toggle("open", open); if (button) button.setAttribute("aria-expanded", String(open));
+    if (menu) menu.hidden = !open;
+  }
+  function setNav(open, returnFocus) {
     if (!nav || !toggle) return;
-    nav.classList.toggle("open", open);
-    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    var mobile = window.innerWidth <= 1000;
+    nav.classList.toggle("open", open); toggle.setAttribute("aria-expanded", String(open));
+    toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
     if (backdrop) backdrop.classList.toggle("show", open);
-    d.body.style.overflow = open && window.innerWidth <= 1000 ? "hidden" : "";
+    d.body.style.overflow = open && mobile ? "hidden" : "";
+    d.querySelectorAll("main,.site-footer,.topbar,.site-header .brand").forEach(function (e) { e.inert = open && mobile; });
+    if (open && mobile) { nav.setAttribute("role", "dialog"); nav.setAttribute("aria-modal", "true"); }
+    else { nav.removeAttribute("role"); nav.removeAttribute("aria-modal"); }
+    if (!open) nav.querySelectorAll(".has-dropdown").forEach(function (g) { setDropdown(g, false); });
+    if (open && mobile) { var first = nav.querySelector(".nav-close"); if (first) first.focus(); }
+    else if (returnFocus) toggle.focus();
   }
-  if (toggle) toggle.addEventListener("click", function () {
-    setNav(!nav.classList.contains("open"));
+  if (toggle) toggle.addEventListener("click", function () { setNav(!nav.classList.contains("open"), true); });
+  if (backdrop) backdrop.addEventListener("click", function () { setNav(false, true); });
+  var close = nav && nav.querySelector(".nav-close");
+  if (close) close.addEventListener("click", function () { setNav(false, true); });
+  d.querySelectorAll(".has-dropdown").forEach(function (group) {
+    var button = group.querySelector("[data-services-toggle]"); if (!button) return;
+    button.addEventListener("click", function () { setDropdown(group, button.getAttribute("aria-expanded") !== "true"); });
+    group.addEventListener("mouseenter", function () { if (window.innerWidth > 1000) setDropdown(group, true); });
+    group.addEventListener("mouseleave", function () { if (window.innerWidth > 1000 && !group.contains(d.activeElement)) setDropdown(group, false); });
+    group.addEventListener("focusout", function (event) { if (!group.contains(event.relatedTarget)) setDropdown(group, false); });
   });
-  if (backdrop) backdrop.addEventListener("click", function () { setNav(false); });
-
-  /* Mobile dropdown accordion (only on small screens) */
-  d.querySelectorAll(".has-dropdown > .nav__link").forEach(function (link) {
-    link.addEventListener("click", function (e) {
-      if (window.innerWidth <= 1000) {
-        e.preventDefault();
-        var open = link.parentElement.classList.toggle("open");
-        link.setAttribute("aria-expanded", open ? "true" : "false");
-      }
-    });
-  });
-
-  /* Close nav on link tap + on resize to desktop */
-  d.querySelectorAll(".nav a:not(.has-dropdown > .nav__link)").forEach(function (a) {
-    a.addEventListener("click", function () { setNav(false); });
-  });
-  window.addEventListener("resize", function () {
-    if (window.innerWidth > 1000) {
-      setNav(false);
-      d.querySelectorAll(".has-dropdown").forEach(function (dd) {
-        dd.classList.remove("open");
-        var l = dd.querySelector(".nav__link");
-        if (l) l.setAttribute("aria-expanded", "false");
-      });
+  if (nav) nav.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", function () { setNav(false, false); }); });
+  d.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      var group = d.querySelector(".has-dropdown.open");
+      if (group) { setDropdown(group, false); group.querySelector("[data-services-toggle]").focus(); }
+      else if (nav && nav.classList.contains("open")) setNav(false, true);
+    }
+    if (event.key === "Tab" && nav && nav.classList.contains("open") && window.innerWidth <= 1000) {
+      var items = Array.from(nav.querySelectorAll("a,button")).filter(function (e) { return !e.disabled && e.getClientRects().length && !e.closest("[hidden]"); });
+      var first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && (d.activeElement === first || !nav.contains(d.activeElement))) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (d.activeElement === last || !nav.contains(d.activeElement))) { event.preventDefault(); first.focus(); }
     }
   });
-
-  /* ---- FAQ: keep single-open behaviour optional (allow multiple) ---- */
-  // Native <details> handles toggling; nothing required.
-
-  /* ---- Scroll reveal ---- */
-  var reveals = d.querySelectorAll(".reveal");
-  if ("IntersectionObserver" in window && reveals.length) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          en.target.classList.add("in");
-          io.unobserve(en.target);
-        }
-      });
-    }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
-    reveals.forEach(function (el) { io.observe(el); });
-  } else {
-    reveals.forEach(function (el) { el.classList.add("in"); });
-  }
-
-  /* ---- Hide sticky mobile call bar while a quote form is on screen ---- */
-  var mbar = d.querySelector(".mobile-bar");
-  var qform = d.querySelector("form[data-quote-form]");
+  window.addEventListener("resize", function () { if (window.innerWidth > 1000) setNav(false, false); });
+  // Keep content visible even if any script fails. Motion is CSS-only and limited to the hero.
+  d.querySelectorAll("[data-year]").forEach(function (e) { e.textContent = new Date().getFullYear(); });
+  var mbar = d.querySelector(".mobile-bar"), qform = d.querySelector("form[data-quote-form]");
   if (mbar && qform && "IntersectionObserver" in window) {
-    var mbio = new IntersectionObserver(function (entries) {
-      mbar.classList.toggle("is-hidden", entries[0].isIntersecting);
-    }, { threshold: 0.2 });
-    mbio.observe(qform);
+    new IntersectionObserver(function (entries) { mbar.classList.toggle("is-hidden", entries[0].isIntersecting); }, { threshold: 0.2 }).observe(qform);
   }
-
-  /* ---- Footer year ---- */
-  d.querySelectorAll("[data-year]").forEach(function (el) {
-    el.textContent = new Date().getFullYear();
-  });
-
 })();
 
 /* Receipt-confirmed enquiries. Keep field IDs compatible with the intake workflow. */
@@ -102,6 +66,36 @@
   var d = document;
   var webhook = "https://auto.sdagents.ai/webhook/hvac-sites";
   var forms = d.querySelectorAll("form[data-quote-form], form[data-enquiry-form]");
+  var receiptKey = "hvac-enquiry-receipt-v1";
+  var contextKey = "hvac-enquiry-context-v1", attributionKey = "hvac-enquiry-attribution-v1";
+  var attributionNames = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "gbraid", "wbraid", "fbclid", "msclkid"];
+  function recent(key) {
+    try { var entry = JSON.parse(sessionStorage.getItem(key) || "null"); return entry && entry.domain === location.hostname && Date.now() - entry.at >= 0 && Date.now() - entry.at < 1800000 ? entry : null; } catch (_) { return null; }
+  }
+  function sourceWithAttribution(raw) {
+    var source = new URL(raw, location.origin);
+    if (source.origin !== location.origin) return location.href;
+    var prior = recent(attributionKey);
+    attributionNames.forEach(function (name) { if (!source.searchParams.has(name) && prior && prior.params && typeof prior.params[name] === "string") source.searchParams.set(name, prior.params[name]); });
+    return source.href;
+  }
+  var arrival = new URL(location.href), attribution = {};
+  attributionNames.forEach(function (name) { if (arrival.searchParams.has(name)) attribution[name] = arrival.searchParams.get(name).slice(0, 4096); });
+  try { if (Object.keys(attribution).length) sessionStorage.setItem(attributionKey, JSON.stringify({ domain: location.hostname, at: Date.now(), params: attribution })); } catch (_) {}
+  var confirmation = d.querySelector("[data-enquiry-confirmation]");
+  if (confirmation) {
+    try {
+      var receipt = JSON.parse(sessionStorage.getItem(receiptKey) || "null");
+      if (receipt && receipt.domain === location.hostname && ["email", "phone"].includes(receipt.channel) && Date.now() - receipt.at >= 0 && Date.now() - receipt.at < 1800000) {
+        confirmation.querySelector("[data-confirmation-badge]").classList.remove("ty__status-neutral");
+        confirmation.querySelectorAll("[data-status-icon]").forEach(function (e) { e.hidden = e.dataset.statusIcon !== "received"; });
+        confirmation.querySelectorAll("[data-followup-icon]").forEach(function (e) { e.hidden = e.dataset.followupIcon !== receipt.channel; });
+        confirmation.querySelector("[data-confirmation-heading]").textContent = "Request received";
+        confirmation.querySelector("[data-confirmation-message]").textContent = "Headbanger Marketing has received your request for Jayden's Mechanical to review. Coverage, pricing, availability and any appointment require separate confirmation.";
+        confirmation.querySelector("[data-confirmation-followup]").textContent = receipt.channel === "email" ? "Watch your email for follow-up from the team, including your junk folder. You selected email for this request." : "Answer the call. It may come from an unfamiliar number or area code. You selected a phone call for this request.";
+      }
+    } catch (_) { /* The neutral page remains useful when storage is unavailable. */ }
+  }
 
   function focusQuote() {
     if (window.location.hash !== "#quote") return;
@@ -131,6 +125,30 @@
     var status = form.querySelector(".form-status");
     var button = form.querySelector('button[type="submit"]');
     var preferred = form.querySelector('[name="preferred_contact"]');
+    var readiness = form.querySelector("[data-form-readiness]");
+    var interest = form.querySelector('[name="service"]');
+    var contactPage = location.pathname === "/contact/", previous = recent(contextKey);
+    function allowedInterest(value) { return interest && Array.from(interest.options).some(function (o) { return o.value === value; }); }
+    function rememberContext() {
+      if (contactPage || !interest) return;
+      // Carry only the page path and existing marketing attribution, never form data.
+      var source = new URL(location.origin + location.pathname), attributed = new URL(sourceWithAttribution(location.href));
+      attributionNames.forEach(function (name) { if (attributed.searchParams.has(name)) source.searchParams.set(name, attributed.searchParams.get(name)); });
+      try { sessionStorage.setItem(contextKey, JSON.stringify({ domain: location.hostname, at: Date.now(), interest: interest.value, source: source.href })); } catch (_) {}
+    }
+    if (interest) {
+      var requested = new URLSearchParams(location.search).get("interest");
+      if (contactPage && requested && allowedInterest(requested)) interest.value = requested;
+      else if (contactPage && !requested && previous && allowedInterest(previous.interest)) interest.value = previous.interest;
+      interest.addEventListener("change", rememberContext);
+      rememberContext();
+    }
+    function enquirySource() {
+      if (contactPage && previous && typeof previous.source === "string") {
+        try { var source = new URL(previous.source); if (source.origin === location.origin && (source.pathname === "/" || /^\/services\/[a-z-]+\/$/.test(source.pathname))) return sourceWithAttribution(source.href); } catch (_) {}
+      }
+      return sourceWithAttribution(location.href);
+    }
     function contactChoice() {
       var choice = preferred ? preferred.value : "email";
       ["email", "phone"].forEach(function (name) {
@@ -207,14 +225,18 @@
       var message = value("message");
       var electrical = form.hasAttribute("data-enquiry-form");
       var service = value("service");
-      if (electrical && service) message = "Electrical project: " + service + "\n" + message;
+      if (service && interest && Array.from(interest.options).some(function (o) { return o.value === service; })) {
+        message = (electrical ? "Electrical project: " : "Work requested: ") + interest.options[interest.selectedIndex].text + "\n" + message;
+      }
       var payload = new URLSearchParams({
         "1.3": value("name"), "2": value("email"), "3": message, "4": value("phone"),
         "5.1": value("address"), "5.3": value("city"), "5.5": value("postal"),
-        source_url: window.location.href, date_created: stamp, preferred_contact: value("preferred_contact")
+        source_url: enquirySource(), date_created: stamp, preferred_contact: value("preferred_contact")
       });
       if (form.querySelector('[name="consent"]')) payload.append("consent", "contact_and_provider_assessment_agreed");
       if (electrical) { payload.append("source_domain", form.dataset.domain); payload.append("trade", "Electrical"); payload.append("service", service); }
+      var submittedChannel = payload.get("preferred_contact") === "phone" ? "phone" : "email";
+      try { sessionStorage.removeItem(receiptKey); } catch (_) {}
       busy = true;
       if (button) button.disabled = true;
       form.setAttribute("aria-busy", "true");
@@ -231,18 +253,28 @@
         if (!accepted(ack)) throw new Error("Receipt unconfirmed");
         received = true;
         form.dataset.receiptConfirmed = "true";
-        showStatus(true, "Thank you. Headbanger Marketing has received your request for Jayden's Mechanical to review. Coverage, availability and any appointment require separate confirmation.");
-        if (form.dataset.redirectOnSuccess) window.location.href = form.dataset.redirectOnSuccess;
+        var channel = submittedChannel;
+        showStatus(true, "Thank you. Headbanger Marketing has received your request for Jayden's Mechanical to review. Watch for follow-up by " + (channel === "email" ? "email" : "phone call") + ". Coverage, pricing, availability and any appointment require separate confirmation.");
+        var stored = false;
+        try {
+          sessionStorage.removeItem(contextKey); sessionStorage.removeItem(attributionKey);
+          sessionStorage.setItem(receiptKey, JSON.stringify({ domain: location.hostname, channel: channel, interest: service, at: Date.now() })); stored = true;
+        } catch (_) {}
+        if (stored && form.dataset.redirectOnSuccess === "/thank-you/") window.location.href = "/thank-you/";
       } catch (error) {
         showStatus(false, "We could not confirm receipt. Your request may already have reached intake. Your details are still here. Email contact@" + (form.dataset.domain || window.location.hostname) + " to confirm before sending again.");
+        if (readiness) { readiness.hidden = false; readiness.firstChild.textContent = "You can also email "; }
       } finally {
         clearTimeout(timer);
         busy = false;
         form.removeAttribute("aria-busy");
         if (button) button.disabled = received;
-        if (status && !form.dataset.redirectOnSuccess) status.focus({ preventScroll: true });
-        else if (status && !received) status.focus({ preventScroll: true });
+        if (status) status.focus({ preventScroll: true });
       }
     });
+    // Enable only after validation and receipt-confirmed submission are bound.
+    form.dataset.formReady = "true";
+    if (button) button.disabled = false;
+    if (readiness) readiness.hidden = true;
   });
 })();
