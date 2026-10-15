@@ -331,7 +331,14 @@ p { margin: 0 0 1rem; }
   position: relative; z-index: 3;
 }
 .hero h1 { color: #fff; }
-.hero h1 .accent {
+.hero__tagline {
+  display: block;
+  font-family: var(--font-head); font-weight: 700;
+  font-size: clamp(1.25rem, .9rem + 1vw, 1.65rem);
+  line-height: 1.3;
+}
+.hero h1 .accent,
+.hero__tagline.accent {
   /* Gradient between two lightened variants of --accent so both endpoints
      pass WCAG AA-large (>=3.0) against var(--navy) on every site. The old
      rule (accent -> accent2) was invisible on most sites because accent2
@@ -342,7 +349,8 @@ p { margin: 0 0 1rem; }
 }
 /* Browsers without color-mix support (older Safari): fall back to solid accent. */
 @supports not (background: color-mix(in srgb, red, white)) {
-  .hero h1 .accent {
+  .hero h1 .accent,
+  .hero__tagline.accent {
     background: none;
     -webkit-text-fill-color: var(--accent-bright);
     color: var(--accent-bright);
