@@ -19,7 +19,7 @@
     toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
     if (backdrop) backdrop.classList.toggle("show", open);
     d.body.style.overflow = open && mobile ? "hidden" : "";
-    d.querySelectorAll("main,.site-footer,.topbar,.site-header .brand").forEach(function (e) { e.inert = open && mobile; });
+    d.querySelectorAll("main,.site-footer,.site-header .brand").forEach(function (e) { e.inert = open && mobile; });
     if (open && mobile) { nav.setAttribute("role", "dialog"); nav.setAttribute("aria-modal", "true"); }
     else { nav.removeAttribute("role"); nav.removeAttribute("aria-modal"); }
     if (!open) nav.querySelectorAll(".has-dropdown").forEach(function (g) { setDropdown(g, false); });
