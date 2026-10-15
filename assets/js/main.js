@@ -91,8 +91,8 @@
         confirmation.querySelectorAll("[data-status-icon]").forEach(function (e) { e.hidden = e.dataset.statusIcon !== "received"; });
         confirmation.querySelectorAll("[data-followup-icon]").forEach(function (e) { e.hidden = e.dataset.followupIcon !== receipt.channel; });
         confirmation.querySelector("[data-confirmation-heading]").textContent = "Request received";
-        confirmation.querySelector("[data-confirmation-message]").textContent = "Headbanger Marketing has received your request for Jayden's Mechanical to review. Coverage, pricing, availability and any appointment require separate confirmation.";
-        confirmation.querySelector("[data-confirmation-followup]").textContent = receipt.channel === "email" ? "Watch your email for follow-up from the team, including your junk folder. You selected email for this request." : "Answer the call. It may come from an unfamiliar number or area code. You selected a phone call for this request.";
+        confirmation.querySelector("[data-confirmation-message]").textContent = "Your request has been received for review. Coverage, pricing, availability and any appointment require separate confirmation.";
+        confirmation.querySelector("[data-confirmation-followup]").textContent = receipt.channel === "email" ? "Watch your email for follow-up from the team, including your junk folder." : "Answer the call. It may come from an unfamiliar number or area code.";
       }
     } catch (_) { /* The neutral page remains useful when storage is unavailable. */ }
   }
@@ -154,10 +154,10 @@
       ["email", "phone"].forEach(function (name) {
         var input = form.querySelector('[name="' + name + '"]');
         if (!input) return;
-        input.disabled = name !== choice;
-        input.required = name === choice;
+        input.disabled = preferred ? name !== choice : false;
+        input.required = preferred ? name === choice : name === "email";
         var field = input.closest("[data-contact-field]");
-        if (field) { field.hidden = name !== choice; field.classList.remove("invalid"); }
+        if (field) { field.hidden = preferred ? name !== choice : false; field.classList.remove("invalid"); }
         input.removeAttribute("aria-invalid");
       });
     }
@@ -231,7 +231,7 @@
       var payload = new URLSearchParams({
         "1.3": value("name"), "2": value("email"), "3": message, "4": value("phone"),
         "5.1": value("address"), "5.3": value("city"), "5.5": value("postal"),
-        source_url: enquirySource(), date_created: stamp, preferred_contact: value("preferred_contact")
+        source_url: enquirySource(), date_created: stamp, preferred_contact: value("preferred_contact") || "email"
       });
       if (form.querySelector('[name="consent"]')) payload.append("consent", "contact_and_provider_assessment_agreed");
       if (electrical) { payload.append("source_domain", form.dataset.domain); payload.append("trade", "Electrical"); payload.append("service", service); }
@@ -254,7 +254,7 @@
         received = true;
         form.dataset.receiptConfirmed = "true";
         var channel = submittedChannel;
-        showStatus(true, "Thank you. Headbanger Marketing has received your request for Jayden's Mechanical to review. Watch for follow-up by " + (channel === "email" ? "email" : "phone call") + ". Coverage, pricing, availability and any appointment require separate confirmation.");
+        showStatus(true, "Thank you. Your request has been received for review. Watch for follow-up by " + (channel === "email" ? "email" : "phone call") + ". Coverage, pricing, availability and any appointment require separate confirmation.");
         var stored = false;
         try {
           sessionStorage.removeItem(contextKey); sessionStorage.removeItem(attributionKey);
