@@ -106,8 +106,9 @@ p { margin: 0 0 1rem; }
 .bg-navy { background: var(--navy); color: #cfe0f0; }
 .section-head { max-width: 720px; margin: 0 auto clamp(36px, 4vw, 56px); text-align: center; }
 .section-head.left { margin-inline: 0; text-align: left; }
-.section-head p { color: var(--muted);  }
-.lead {  color: var(--body); }
+/* Ordinary section and article prose follows the body rhythm, including lists. */
+.section-head p { color: var(--muted); }
+.lead { color: var(--body); }
 .center { text-align: center; }
 
 /* ---------- Buttons ---------- */
@@ -802,7 +803,7 @@ textarea { resize: vertical; min-height: 100px; }
 .article { max-width: 760px; margin-inline: auto; }
 .article h2 { margin: 36px 0 14px; font-size: 1.6rem; }
 .article h3 { margin: 28px 0 10px; }
-.article p { color: var(--body);  }
+.article p { color: var(--body); }
 .article ul.bullets { margin: 0 0 1rem; display: grid; gap: 10px; }
 .article ul.bullets li { position: relative; padding-left: 30px; color: var(--body); }
 .article ul.bullets li::before {
@@ -1027,12 +1028,7 @@ img.responsive { width: 100%; height: auto; }
 .quote-consent input { width: 18px; height: 18px; flex: none; margin-top: 3px; }
 .form-status:focus { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-/* Keep the existing quote card and landing hierarchy, with a shorter form. */
-.quote-card .form-grid { gap: 10px; }
-.quote-card .field { gap: 4px; }
-.quote-card .input { padding: 11px 13px; min-height: 46px; }
-.quote-card textarea.input { min-height: 86px; }
-.quote-card .sub { margin-bottom: 12px; }
+/* Quote cards use the original visible rows and form spacing above. */
 .form-readiness { font-size: .84rem; line-height: 1.5; padding: 10px 0; }
 .form-readiness a { overflow-wrap: anywhere; text-decoration: underline; }
 [hidden] { display: none !important; }
